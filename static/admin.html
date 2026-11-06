@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Админка · Зимний бал</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Great+Vibes&family=Manrope:wght@400;500;600;700&display=swap&subset=cyrillic" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+<style>
+  main{padding:90px 0 60px}
+  h1{margin:0;font:400 40px/1.1 var(--serif);color:var(--navy)}
+  .login{max-width:400px;margin:60px auto}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0}
+  @media (max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{padding:16px 18px}
+  .stat small{font-size:12px;color:var(--soft)}
+  .stat b{display:block;font:500 30px/1.1 var(--serif);color:var(--navy)}
+  .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+  .tab{height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--line-2);background:#fff;cursor:pointer;font-size:14px}
+  .tab[aria-pressed=true]{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .bar input{flex:1;min-width:180px;height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line-2)}
+  .list{display:grid;gap:10px}
+  .o{display:grid;grid-template-columns:70px 1fr auto;gap:14px;align-items:center;padding:14px 16px;background:#fff;border:1px solid var(--line);border-radius:14px}
+  @media (max-width:640px){.o{grid-template-columns:1fr}.o .no{display:none}}
+  .o .no{font:500 22px/1 var(--serif);color:var(--navy)}
+  .o b{color:var(--navy)}
+  .o small{display:block;color:var(--muted);font-size:13px}
+  .o .acts{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+  .pill{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.04em;margin-left:6px;vertical-align:2px}
+  .s-review{background:var(--warn-bg);color:var(--warn)}.s-paid{background:var(--ok-bg);color:var(--ok)}
+  .s-pending{background:var(--cream);color:var(--muted)}.s-rejected{background:var(--err-bg);color:var(--err)}
+  .empty{padding:40px;text-align:center;color:var(--soft)}
+</style>
+</head>
+<body>
+<div class="bg-glow"></div>
+<nav class="nav scrolled"><div class="wrap"><a class="brand" href="/"><b>Зимний</b><i>бал</i></a><button class="btn sm ghost" id="logout" style="margin-left:auto" hidden>Выйти</button></div></nav>
+<main><div class="wrap" id="root"></div></main>
+<script src="/static/common.js"></script>
+<script>
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const root = $("#root");
+let key = store.get("wb_admin_key", ""), data = null, filter = "review", search = "", timer;
+const LABEL = { review: "На проверке", paid: "Оплачен", pending: "Ждёт чек", rejected: "Отклонён" };
+const hdr = () => ({ "X-Admin-Key": key });
+
+function login(msg = "") {
+  $("#logout").hidden = true;
+  root.innerHTML = `<form class="card login" id="lf"><h1>Вход для организаторов</h1>
+    <p class="muted" style="color:var(--muted)">Ключ — поле <code>admin_key</code> в config.json.</p>
+    <label class="field"><span>Ключ</span><input type="password" name="k" autocomplete="current-password" required></label>
+    <p class="err">${esc(msg)}</p><button class="btn block">Войти</button></form>`;
+  $("#lf").addEventListener("submit", e => { e.preventDefault(); key = e.target.k.value.trim(); load(true); });
+}
+
+async function load(first) {
+  clearTimeout(timer);
+  try {
+    data = await api("/api/admin/orders", { headers: hdr() });
+    if (first) store.set("wb_admin_key", key);
+    $("#logout").hidden = false;
+    draw();
+    timer = setTimeout(load, 10000);
+  } catch (e) { store.set("wb_admin_key", ""); login(first ? e.message : ""); }
+}
+
+function draw() {
+  const os = data.orders, paid = os.filter(o => o.status === "paid");
+  const guests = paid.reduce((n, o) => n + (o.kind === "pair" ? 2 : 1), 0);
+  const sum = paid.reduce((n, o) => n + o.amount, 0);
+  const inside = paid.filter(o => o.checked_in).reduce((n, o) => n + (o.kind === "pair" ? 2 : 1), 0);
+  const count = s => os.filter(o => o.status === s).length;
+  const q = search.toLowerCase();
+  const list = os.filter(o => (filter === "all" || o.status === filter) &&
+    (!q || [o.name, o.guest2, o.phone, o.code, o.number, o.telegram].join(" ").toLowerCase().includes(q)));
+  const active = document.activeElement?.id;
+  root.innerHTML = `<h1>Заявки</h1>
+    <div class="stats">
+      <div class="card stat"><small>Собрано</small><b>${money(sum)} тг</b></div>
+      <div class="card stat"><small>Гостей оплачено</small><b>${guests}</b></div>
+      <div class="card stat"><small>Прошли вход</small><b>${inside}</b></div>
+      <div class="card stat"><small>${data.seats_left === null ? "На проверке" : "Свободно мест"}</small><b>${data.seats_left === null ? count("review") : data.seats_left}</b></div>
+    </div>
+    <div class="bar">
+      ${["review", "paid", "pending", "rejected", "all"].map(s => `<button class="tab" data-f="${s}" aria-pressed="${filter === s}">${s === "all" ? "Все" : LABEL[s]} · ${s === "all" ? os.length : count(s)}</button>`).join("")}
+      <input id="q" placeholder="Поиск: имя, телефон, код, №" value="${esc(search)}">
+    </div>
+    <div class="list">${list.map(row).join("") || '<div class="empty">Здесь пока пусто</div>'}</div>`;
+  $$(".tab").forEach(b => b.onclick = () => { filter = b.dataset.f; draw(); });
+  const qi = $("#q"); qi.oninput = () => { search = qi.value; draw(); };
+  if (active === "q") { qi.focus(); qi.setSelectionRange(qi.value.length, qi.value.length); }
+  $$("[data-act]").forEach(b => b.onclick = () => act(b.dataset.t, b.dataset.act, b));
+  $$("[data-rc]").forEach(b => b.onclick = () => receipt(b.dataset.rc));
+}
+
+function row(o) {
+  const when = o.created ? new Date(o.created * 1000).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "";
+  const a = [];
+  if (o.receipt) a.push(`<button class="btn sm ghost" data-rc="${o.token}">Чек</button>`);
+  if (o.status !== "paid") a.push(`<button class="btn sm" data-act="confirm" data-t="${o.token}">Подтвердить</button>`);
+  if (o.status === "review") a.push(`<button class="btn sm ghost" data-act="reject" data-t="${o.token}">Отклонить</button>`);
+  if (o.status === "paid") a.push(o.checked_in
+    ? `<button class="btn sm ghost" data-act="uncheck" data-t="${o.token}">Снять вход</button>`
+    : `<button class="btn sm ghost" data-act="checkin" data-t="${o.token}">Отметить вход</button>`);
+  a.push(`<a class="btn sm ghost" href="/t/${o.token}" target="_blank">Билет</a>`);
+  return `<div class="o"><div class="no">№${esc(o.number)}</div>
+    <div><b>${esc(o.name)}${o.guest2 ? " + " + esc(o.guest2) : ""}</b><span class="pill s-${o.status}">${LABEL[o.status]}${o.checked_in ? " · вошёл" : ""}</span>
+    <small>${esc(o.kind_label)} · ${money(o.amount)} тг · ${esc(o.code)} · ${esc(o.phone)}${o.telegram ? " · " + esc(o.telegram) : ""} · ${when}${o.decided_by ? " · " + esc(o.decided_by) : ""}</small></div>
+    <div class="acts">${a.join("")}</div></div>`;
+}
+
+async function act(token, action, btn) {
+  if (action === "reject" && !confirm("Отклонить чек? Гость сможет загрузить новый.")) return;
+  if (action === "confirm" && !confirm("Подтвердить оплату? Гость сразу получит билет.")) return;
+  btn.disabled = true;
+  try { await api(`/api/admin/orders/${token}/${action}`, { method: "POST", headers: hdr() }); await load(); }
+  catch (e) { alert(e.message); btn.disabled = false; }
+}
+
+async function receipt(token) {
+  const w = open("", "_blank");
+  const r = await fetch(`/api/admin/orders/${token}/receipt`, { headers: hdr() });
+  if (!r.ok) { w?.close(); return alert("Чек не найден"); }
+  const url = URL.createObjectURL(await r.blob());
+  if (w) w.location = url; else location = url;
+}
+
+$("#logout").onclick = () => { store.set("wb_admin_key", ""); key = ""; login(); };
+key ? load(true) : login();
+</script>
+</body>
+</html>

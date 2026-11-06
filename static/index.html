@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Зимний бал · ЕАГИ × DOSTEAM</title>
+<meta name="description" content="Зимний бал ЕАГИ и DOSTEAM — 4 декабря 2026, 16:00, конференц-зал ВКЕАГИ. Билеты онлайн через Kaspi.">
+<meta property="og:title" content="Зимний бал · 4 декабря">
+<meta property="og:description" content="Вечерние платья, костюмы и самый красивый вечер зимы. Билеты онлайн.">
+<meta property="og:image" content="/static/img/poster.webp">
+<meta name="theme-color" content="#f5eee3">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%231a2849' d='M12 0c.6 6.5 5.5 11.4 12 12-6.5.6-11.4 5.5-12 12-.6-6.5-5.5-11.4-12-12C6.5 11.4 11.4 6.5 12 0z'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Great+Vibes&family=Marck+Script&family=Manrope:wght@400;500;600;700&display=swap&subset=cyrillic" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css?v=4">
+</head>
+<body>
+<div class="bg-glow"></div>
+<canvas id="snow" aria-hidden="true"></canvas>
+
+<nav class="nav" id="nav">
+  <div class="wrap">
+    <a class="brand" href="#top"><b>Зимний</b><i>бал</i></a>
+    <ul>
+      <li><a href="#details">Детали</a></li>
+      <li><a href="#program">Программа</a></li>
+      <li><a href="#dress">Дресс-код</a></li>
+      <li><a href="#tickets">Билеты</a></li>
+      <li><a href="#faq">Вопросы</a></li>
+    </ul>
+    <a class="btn sm ghost" id="myTicket" href="#" hidden>Мой билет</a>
+    <a class="btn sm" href="#tickets">Купить билет</a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <img class="chandelier" src="/static/img/chandelier.webp" alt="" width="664" height="205">
+  <div class="logos">
+    <img src="/static/img/logo-eagi.png?v=2" alt="ЕАГИ" width="412" height="290">
+    <span></span>
+    <img src="/static/img/logo-dosteam.png?v=2" alt="DOSTEAM" width="340" height="260">
+  </div>
+  <p class="eyebrow">ЕАГИ × DOSTEAM приглашают</p>
+  <h1 class="title"><span class="t1">Зимний</span><span class="t2">бал</span></h1>
+  <svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 0c.6 6.5 5.5 11.4 12 12-6.5.6-11.4 5.5-12 12-.6-6.5-5.5-11.4-12-12C6.5 11.4 11.4 6.5 12 0z"/></svg>
+  <ul class="meta">
+    <li data-ev="date">4 декабря 2026</li>
+    <li data-ev="time">16:00</li>
+    <li data-ev="place">Конференц-зал ВКЕАГИ</li>
+  </ul>
+  <div class="countdown" id="countdown" aria-label="До бала осталось">
+    <div><b id="cd-d">—</b><small>дней</small></div>
+    <div><b id="cd-h">—</b><small>часов</small></div>
+    <div><b id="cd-m">—</b><small>минут</small></div>
+    <div><b id="cd-s">—</b><small>секунд</small></div>
+  </div>
+  <div class="cta">
+    <a class="btn" href="#tickets">Купить билет — от <span data-price="single">1500</span> тг</a>
+    <a class="btn ghost" href="#details">Подробнее</a>
+  </div>
+  <div class="scroll-hint">Листайте</div>
+</header>
+
+<main>
+  <section id="details">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="eyebrow">Детали вечера</p>
+        <h2>Один вечер, <em>чтобы запомнить</em></h2>
+      </div>
+      <div class="details">
+        <div class="card detail reveal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>
+          <small>Дата</small><b data-ev="date">4 декабря 2026</b><p>Пятница</p>
+        </div>
+        <div class="card detail reveal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+          <small>Начало</small><b data-ev="time">16:00</b><p>Приходите чуть раньше</p>
+        </div>
+        <div class="card detail reveal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M12 21s-7-6.1-7-11.5a7 7 0 1 1 14 0C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+          <small>Место</small><b data-ev="place">Конференц-зал ВКЕАГИ</b><p>Вход по билетам с QR-кодом</p>
+        </div>
+        <div class="card detail reveal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M3 8.5V6a1.5 1.5 0 0 1 1.5-1.5h15A1.5 1.5 0 0 1 21 6v2.5a2.5 2.5 0 0 0 0 5V18a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18v-4.5a2.5 2.5 0 0 0 0-5z"/><path d="M14.5 5v14" stroke-dasharray="2 2"/></svg>
+          <small>Вход</small><b>По билетам</b><p><span data-price="single">1500</span> тг · 1+1 — <span data-price="pair">2000</span> тг</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="program">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="eyebrow">Программа</p>
+        <h2>Что вас <em>ждёт</em></h2>
+        <p>Вечер, в котором всё — для красивых воспоминаний.</p>
+      </div>
+      <div class="program">
+        <article class="feat-card hero-card reveal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 10H5L3 8z"/><path d="M5 21h14"/></svg>
+          <small>Коронация</small>
+          <b>Мисс и Мистер бала</b>
+          <p>Главный момент вечера — выбор самых ярких гостей бала. Может, это будете вы?</p>
+        </article>
+        <article class="feat-card reveal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M8.5 7l1.5-3h4l1.5 3"/><circle cx="12" cy="13.5" r="3.5"/></svg>
+          <small>Фотозоны</small>
+          <b>Кадры на память</b>
+          <p>Красивые локации для фото в вечерних образах.</p>
+        </article>
+        <article class="feat-card reveal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/></svg>
+          <small>Оформление</small>
+          <b>Зимняя сказка</b>
+          <p>Зал, украшенный в стиле бала: свет, детали, атмосфера.</p>
+        </article>
+        <article class="feat-card reveal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></svg>
+          <small>Программа</small>
+          <b>Вечер бала</b>
+          <p>Насыщенная программа вечера от начала и до финала.</p>
+        </article>
+        <article class="feat-card reveal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8c-1.5-3-5-3.5-5-1.5S10 8 12 8zm0 0c1.5-3 5-3.5 5-1.5S14 8 12 8z"/></svg>
+          <small>Конкурсы</small>
+          <b>И сюрпризы</b>
+          <p>Конкурсы для гостей — участвуйте и побеждайте.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="dress">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="eyebrow">Дресс-код</p>
+        <h2>Наденьте <em>лучший наряд</em></h2>
+        <p>Хрусталь, огни и самый красивый вечер зимы. Возьмите с собой того, с кем хочется танцевать.</p>
+      </div>
+      <div class="dress reveal">
+        <div><b>Девушки</b><span>в вечерних платьях</span></div>
+        <div><b>Парни</b><span>в костюмах</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tickets">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="eyebrow">Билеты</p>
+        <h2>Ваше <em>приглашение</em></h2>
+        <p>Оплата через Kaspi за пару минут. Билет с QR-кодом придёт на сайт и в Telegram.</p>
+      </div>
+      <div class="tickets">
+        <article class="ticket reveal">
+          <h3>1 человек</h3>
+          <p class="price"><span data-price="single">1500</span><small>тг</small></p>
+          <p class="note">Один входной билет на Зимний бал</p>
+          <span class="perf"></span>
+          <button class="btn ghost block go" data-buy="single">Выбрать</button>
+        </article>
+        <article class="ticket feat reveal">
+          <span class="tag">Выгоднее</span>
+          <h3>1 + 1 · на двоих</h3>
+          <p class="price"><span data-price="pair">2000</span><small>тг</small></p>
+          <p class="note">Для пары или друзей — один QR на двоих, <span id="saving">экономия 1000 тг</span></p>
+          <span class="perf"></span>
+          <button class="btn block go" data-buy="pair">Выбрать</button>
+        </article>
+      </div>
+      <p class="seats" id="seats" hidden></p>
+
+      <div class="steps">
+        <div class="step reveal"><b>Заполните заявку</b><p>Имя и телефон — меньше минуты.</p></div>
+        <div class="step reveal"><b>Переведите в Kaspi</b><p>Номер и сумма будут на экране, их можно скопировать.</p></div>
+        <div class="step reveal"><b>Загрузите чек</b><p>Скриншот или PDF из Kaspi прямо с телефона.</p></div>
+        <div class="step reveal"><b>Получите билет</b><p>После подтверждения QR-код появится автоматически.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="eyebrow">Вопросы</p>
+        <h2>Всё, что <em>важно знать</em></h2>
+      </div>
+      <div class="faq reveal">
+        <details><summary>Как подтверждается оплата?</summary><p>После загрузки чека организаторы сразу получают его и сверяют с переводом в Kaspi. Как только оплата подтверждена, на странице заявки появляется билет с QR-кодом, а если вы подключили Telegram-бота, билет приходит и туда.</p></details>
+        <details><summary>Нужно ли держать страницу открытой?</summary><p>Нет. Ссылка на вашу заявку сохраняется в браузере — кнопка «Мой билет» вверху сайта. Ещё надёжнее подключить Telegram-бота: он пришлёт билет сам.</p></details>
+        <details><summary>Что показать на входе?</summary><p>QR-код билета на экране телефона — подойдёт и скриншот. Билет 1+1 — это один QR-код на двоих, приходите вместе.</p></details>
+        <details><summary>Что писать в комментарии к переводу?</summary><p>Код вашей заявки вида ZB-1234 — он будет на экране оплаты. Так организаторы быстрее найдут ваш перевод.</p></details>
+        <details><summary>Нет Kaspi или что-то пошло не так?</summary><p>Напишите организаторам: <a data-contact href="#">DOSTEAM</a>. Поможем.</p></details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <img class="bow" src="/static/img/bow.webp" alt="" loading="lazy" width="1024" height="301">
+  <div class="wrap">
+    <a class="brand" href="#top"><b>Зимний</b><i>бал</i></a>
+    <p>ЕАГИ × DOSTEAM · <span data-ev="date">4 декабря 2026</span></p>
+    <p>Вопросы: <a data-contact href="#">DOSTEAM</a></p>
+  </div>
+</footer>
+
+<div class="modal" id="buy" role="dialog" aria-modal="true" aria-labelledby="buyTitle">
+  <div class="scrim" data-close></div>
+  <form class="sheet" id="buyForm" novalidate>
+    <button type="button" class="x" data-close aria-label="Закрыть">×</button>
+    <h3 id="buyTitle">Билет на бал</h3>
+    <p class="sub">Шаг 1 из 4 · данные гостя</p>
+    <div class="seg" role="group" aria-label="Тип билета">
+      <button type="button" class="chip" data-kind="single" aria-pressed="true"><b>1 человек</b><span><span data-price="single">1500</span> тг</span></button>
+      <button type="button" class="chip" data-kind="pair" aria-pressed="false"><b>1 + 1</b><span><span data-price="pair">2000</span> тг</span></button>
+    </div>
+    <label class="field"><span>Имя и фамилия</span><input name="name" autocomplete="name" placeholder="Айгерим Сапарова" required></label>
+    <label class="field" id="g2" hidden><span>Имя и фамилия второго гостя</span><input name="guest2" autocomplete="off" placeholder="Арман Ибраев"></label>
+    <label class="field"><span>Телефон</span><input name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 700 000 00 00" required></label>
+    <label class="field"><span>Telegram <i>— необязательно</i></span><input name="telegram" autocomplete="off" placeholder="@username"></label>
+    <p class="err" id="buyErr" role="alert"></p>
+    <button class="btn block" id="buyBtn" type="submit">Перейти к оплате — <span id="buySum">1500</span> тг</button>
+    <p class="fine">Дальше покажем реквизиты Kaspi и код для комментария к переводу.</p>
+  </form>
+</div>
+
+<script src="/static/common.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>

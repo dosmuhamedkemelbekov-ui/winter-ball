@@ -1,0 +1,27 @@
+{
+  "public_url": "http://localhost:8080",
+  "host": "0.0.0.0",
+  "port": 8080,
+
+  "telegram_token": "",
+  "admin_ids": [],
+  "admin_chat_id": "",
+  "admin_key": "придумайте-длинный-пароль",
+
+  "kaspi_phone": "+7 700 000 00 00",
+  "kaspi_name": "Имя Ф.",
+  "contact": "@dosteam",
+
+  "prices": { "single": 1500, "pair": 2000 },
+  "capacity": 0,
+  "sales_open": true,
+
+  "event": {
+    "date": "4 декабря 2026",
+    "date_iso": "2026-12-04T16:00:00+05:00",
+    "time": "16:00",
+    "place": "Конференц-зал ВКЕАГИ",
+    "dress_girls": "Девушки — в вечерних платьях",
+    "dress_boys": "Парни — в костюмах"
+  }
+}

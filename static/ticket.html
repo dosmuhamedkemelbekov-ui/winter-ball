@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Мой билет · Зимний бал</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f5eee3">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%231a2849' d='M12 0c.6 6.5 5.5 11.4 12 12-6.5.6-11.4 5.5-12 12-.6-6.5-5.5-11.4-12-12C6.5 11.4 11.4 6.5 12 0z'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Great+Vibes&family=Marck+Script&family=Manrope:wght@400;500;600;700&display=swap&subset=cyrillic" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+<style>
+  main{padding:96px 0 64px}
+  .col{width:min(560px,100% - 32px);margin:0 auto}
+  .stepper{display:flex;gap:6px;margin:0 0 26px;padding:0;list-style:none}
+  .stepper li{flex:1;text-align:center;font:600 11px/1.2 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--soft)}
+  .stepper li::before{content:"";display:block;height:3px;border-radius:3px;margin-bottom:9px;background:var(--line)}
+  .stepper li.done::before,.stepper li.now::before{background:var(--navy)}
+  .stepper li.now,.stepper li.done{color:var(--navy)}
+  h1.pg{margin:0;font:400 clamp(36px,7vw,48px)/1.05 var(--serif);color:var(--navy)}
+  .lead{margin:8px 0 24px;color:var(--muted)}
+  .pay{padding:0;overflow:hidden}
+  .amount{padding:26px 26px 22px;background:linear-gradient(160deg,var(--navy-2),var(--navy));color:var(--paper)}
+  .amount small{font:600 11px/1 var(--sans);letter-spacing:.22em;text-transform:uppercase;opacity:.7}
+  .amount b{display:block;margin-top:10px;font:500 54px/1 var(--serif)}
+  .amount span{font-size:14px;opacity:.75}
+  .rows{padding:6px 26px}
+  .row{display:flex;align-items:center;gap:12px;padding:16px 0;border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:0}
+  .row div{flex:1;min-width:0}
+  .row small{display:block;font-size:12px;color:var(--soft)}
+  .row b{display:block;font:600 18px/1.3 var(--sans);color:var(--navy);word-break:break-word}
+  .copy{flex:none;height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--line-2);background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:var(--navy);transition:.2s}
+  .copy:hover{border-color:var(--navy)}
+  .copy.ok{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .how{margin:22px 0 0;padding:0 0 0 20px;color:var(--muted);font-size:15px}
+  .how li{margin:6px 0}
+  .how b{color:var(--ink)}
+  .drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;margin-top:22px;padding:30px 20px;
+    border:1.5px dashed var(--line-2);border-radius:var(--r);background:rgba(251,248,242,.7);text-align:center;cursor:pointer;transition:.2s}
+  .drop:hover,.drop.over{border-color:var(--navy);background:#fff}
+  .drop svg{width:34px;height:34px;color:var(--navy)}
+  .drop b{font:500 22px/1.2 var(--serif);color:var(--navy)}
+  .drop span{font-size:13px;color:var(--soft)}
+  .preview{display:none;align-items:center;gap:14px;margin-top:14px;padding:12px;border:1px solid var(--line);border-radius:14px;background:#fff}
+  .preview.on{display:flex}
+  .preview img{width:54px;height:54px;object-fit:cover;border-radius:8px;background:var(--cream)}
+  .preview div{flex:1;min-width:0;font-size:14px}
+  .preview small{display:block;color:var(--soft)}
+  .banner{padding:14px 16px;border-radius:14px;margin-bottom:18px;font-size:14px}
+  .banner.err{background:var(--err-bg);color:var(--err)}
+  .wait{text-align:center;padding:40px 26px}
+  .orb{width:86px;height:86px;margin:0 auto 22px;border-radius:50%;display:grid;place-items:center;
+    background:radial-gradient(circle at 35% 30%,#fff,var(--cream-2));box-shadow:0 0 0 10px rgba(176,141,87,.08),0 0 0 22px rgba(176,141,87,.05);animation:pulse 2.4s ease-in-out infinite}
+  .orb svg{width:36px;height:36px;color:var(--gold);animation:spin 6s linear infinite}
+  @keyframes pulse{50%{box-shadow:0 0 0 14px rgba(176,141,87,.12),0 0 0 30px rgba(176,141,87,.04)}}
+  .wait h2{margin:0;font:400 34px/1.1 var(--serif);color:var(--navy)}
+  .wait p{color:var(--muted);margin:10px auto 0;max-width:380px}
+  .tg{display:flex;align-items:center;gap:14px;margin-top:18px;padding:18px;border-radius:var(--r);background:#fff;border:1px solid var(--line);text-align:left}
+  .tg svg{flex:none;width:40px;height:40px}
+  .tg div{flex:1;font-size:14px;color:var(--muted)}
+  .tg b{display:block;color:var(--navy);font-size:15px}
+  .muted{color:var(--muted);font-size:14px}
+  .center{text-align:center}
+
+  /* the ticket */
+  .tk{position:relative;border-radius:26px;overflow:hidden;background:linear-gradient(165deg,var(--navy-2),var(--navy) 55%,#121d38);color:var(--paper);
+    box-shadow:0 50px 90px -40px rgba(10,16,35,.8);animation:rise .8s cubic-bezier(.2,.8,.2,1)}
+  @keyframes rise{from{opacity:0;transform:translateY(30px) scale(.97)}}
+  .tk::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.08) 45%,transparent 60%);background-size:250% 100%;animation:shine 5s ease-in-out infinite}
+  @keyframes shine{0%{background-position:120% 0}60%,100%{background-position:-60% 0}}
+  .tk-top{padding:30px 28px 24px;text-align:center}
+  .tk-top small{font:600 11px/1 var(--sans);letter-spacing:.32em;text-transform:uppercase;color:var(--gold-2)}
+  .tk-top .t1{display:block;margin-top:14px;font:400 46px/1 var(--serif);letter-spacing:.08em;text-transform:uppercase}
+  .tk-top .t2{display:block;font:400 60px/.7 var(--script);color:var(--gold-2)}
+  .tk-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px;padding:0 28px 26px}
+  .tk-grid small{display:block;font:600 10px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:rgba(251,248,242,.55)}
+  .tk-grid b{display:block;margin-top:6px;font:500 19px/1.2 var(--serif)}
+  .tk-grid .wide{grid-column:1/-1}
+  .tk-cut{position:relative;height:28px}
+  .tk-cut::before,.tk-cut::after{content:"";position:absolute;top:0;width:28px;height:28px;border-radius:50%;background:var(--cream)}
+  .tk-cut::before{left:-14px}.tk-cut::after{right:-14px}
+  .tk-cut span{position:absolute;left:24px;right:24px;top:13px;border-top:1.5px dashed rgba(251,248,242,.25)}
+  .tk-qr{padding:14px 28px 30px;text-align:center}
+  .qr{display:inline-block;padding:14px;background:#fff;border-radius:16px}
+  .qr svg{display:block;width:min(230px,60vw);height:auto}
+  .tk-qr p{margin:14px 0 0;font:600 12px/1 var(--sans);letter-spacing:.24em;color:rgba(251,248,242,.6)}
+  .tk-used{position:absolute;top:22px;right:-38px;transform:rotate(35deg);padding:6px 46px;background:var(--gold-2);color:var(--navy);font:700 11px/1 var(--sans);letter-spacing:.2em}
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
+  @media (max-width:420px){.actions{grid-template-columns:1fr}}
+
+  /* door check (admins) */
+  .door{margin-bottom:20px;padding:22px;border-radius:var(--r);text-align:center;color:#fff}
+  .door b{display:block;font:700 26px/1.1 var(--sans);letter-spacing:.04em}
+  .door p{margin:6px 0 14px;opacity:.9}
+  .door.ok{background:#2f6b4f}.door.used{background:#a46a12}.door.bad{background:#9b2c2c}
+  .door .btn{background:#fff;color:#111;border-color:#fff}
+  @media print{.nav,.actions,.door,#snow,.bg-glow,.tg{display:none!important}main{padding:0}.tk{box-shadow:none;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body>
+<div class="bg-glow"></div>
+<canvas id="snow" aria-hidden="true"></canvas>
+<nav class="nav scrolled"><div class="wrap"><a class="brand" href="/"><b>Зимний</b><i>бал</i></a><a class="btn sm ghost" href="/" style="margin-left:auto">На главную</a></div></nav>
+
+<main><div class="col" id="root"><p class="center muted" style="padding:80px 0">Загружаем заявку…</p></div></main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="/static/common.js"></script>
+<script src="/static/ticket.js"></script>
+</body>
+</html>
