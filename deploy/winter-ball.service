@@ -1,0 +1,19 @@
+[Unit]
+Description=Winter Ball ticket site (aiohttp + Telegram bot)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=winterball
+Group=winterball
+WorkingDirectory=/opt/winter-ball
+ExecStart=/opt/winter-ball/venv/bin/python server.py
+Restart=always
+RestartSec=3
+Environment=PYTHONUNBUFFERED=1
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
