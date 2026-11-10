@@ -28,7 +28,7 @@ fi
 say "Проверяю Python"
 if ! python3 -c 'import venv, ensurepip' 2>/dev/null; then
   command -v apt-get >/dev/null || die "установите python3-venv вручную"
-  apt-get update -qq && apt-get install -y -qq python3-venv
+  apt-get update -qq && DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq python3-venv
 fi
 
 if ! id "$APP_USER" >/dev/null 2>&1; then
