@@ -4,16 +4,16 @@
 
 ```
 Посетитель ──HTTPS──▶ Сервер Moodle ──HTTP, внутренняя сеть──▶ Сервер DoSteam
-                      188.130.173.173                          10.0.0.20:8090
+                      188.130.173.173                          192.168.2.102:8095
                       nginx/Apache + сертификат                 winter-ball (systemd)
                       Moodle работает как раньше                DoSteam и боты не трогаются
 ```
 
 - DNS: запись `A winterball → 188.130.173.173` (уже добавлена в панели egi.edu.kz).
 - **Сервер Moodle** принимает все запросы на 80/443. Для имени `winterball.egi.edu.kz` он пересылает их на сервер DoSteam, остальное остаётся Moodle. Сертификат HTTPS тоже здесь.
-- **Сервер DoSteam** (без внешнего IP) запускает сайт отдельным сервисом на своём порту (по умолчанию 8090), рядом с DoSteam и ботами. Telegram-бот бала работает через long polling, то есть сам ходит в интернет, входящие соединения ему не нужны.
+- **Сервер DoSteam** (без внешнего IP) запускает сайт отдельным сервисом на своём порту (порт 8095), рядом с DoSteam и ботами. Telegram-бот бала работает через long polling, то есть сам ходит в интернет, входящие соединения ему не нужны.
 
-`10.0.0.20` везде пример: подставьте реальный внутренний IP сервера DoSteam (`hostname -I` на нём).
+`192.168.2.102` везде пример: подставьте реальный внутренний IP сервера DoSteam (`hostname -I` на нём).
 
 ---
 
@@ -93,7 +93,7 @@ sudo systemctl restart winter-ball
 Если на сервере DoSteam включён ufw (`sudo ufw status`), разрешите доступ к порту только серверу Moodle (его **внутренний** IP):
 
 ```bash
-sudo ufw allow from ВНУТРЕННИЙ_IP_MOODLE to any port 8090 proto tcp
+sudo ufw allow from ВНУТРЕННИЙ_IP_MOODLE to any port 8095 proto tcp
 ```
 
 Если ufw выключен, не включайте его ради этого: можно случайно закрыть доступ к DoSteam и SSH.
@@ -101,7 +101,7 @@ sudo ufw allow from ВНУТРЕННИЙ_IP_MOODLE to any port 8090 proto tcp
 С сервера Moodle проверьте, что сайт виден:
 
 ```bash
-curl -s http://10.0.0.20:8090/api/config
+curl -s http://192.168.2.102:8095/api/config
 ```
 
 Должен вернуться JSON.
@@ -122,7 +122,7 @@ systemctl is-active nginx apache2 httpd
 sudo nano /etc/nginx/sites-available/winterball.egi.edu.kz
 ```
 
-Вставьте содержимое `deploy/nginx-winter-ball.conf`, заменив `10.0.0.20:8090` на свой адрес. Затем:
+Вставьте содержимое `deploy/nginx-winter-ball.conf`, заменив `192.168.2.102:8095` на свой адрес. Затем:
 
 ```bash
 sudo ln -s /etc/nginx/sites-available/winterball.egi.edu.kz /etc/nginx/sites-enabled/
@@ -144,7 +144,7 @@ sudo a2enmod proxy proxy_http headers
 sudo nano /etc/apache2/sites-available/winterball.egi.edu.kz.conf
 ```
 
-Вставьте содержимое `deploy/apache-winter-ball.conf`, заменив `10.0.0.20:8090`. Затем:
+Вставьте содержимое `deploy/apache-winter-ball.conf`, заменив `192.168.2.102:8095`. Затем:
 
 ```bash
 sudo a2ensite winterball.egi.edu.kz && sudo apachectl configtest && sudo systemctl reload apache2
@@ -195,7 +195,7 @@ echo '0 3 * * * root tar czf /root/winter-ball-$(date +\%F).tgz -C /opt/winter-b
 
 | Симптом | Где смотреть |
 |---|---|
-| `502 Bad Gateway` | сервер Moodle не достаёт до DoSteam: `curl http://10.0.0.20:8090/api/config` с сервера Moodle; на DoSteam: `systemctl status winter-ball`, `journalctl -u winter-ball -n 50` |
+| `502 Bad Gateway` | сервер Moodle не достаёт до DoSteam: `curl http://192.168.2.102:8095/api/config` с сервера Moodle; на DoSteam: `systemctl status winter-ball`, `journalctl -u winter-ball -n 50` |
 | Открывается Moodle вместо бала | блок winterball не включён или опечатка в `server_name`/`ServerName` |
 | `413 Request Entity Too Large` при загрузке чека | нет `client_max_body_size` (nginx) |
 | Ссылки в Telegram ведут на localhost | неверный `public_url` в `config.json` |
