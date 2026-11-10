@@ -1,141 +1,203 @@
-# Деплой на сервер с поддоменом
+# Деплой: winterball.egi.edu.kz
 
-Пример: поддомен `bal.example.kz`, сервер Ubuntu 22.04/24.04 (VPS с публичным IP).
-Везде замените `bal.example.kz` на свой поддомен и `203.0.113.10` на IP сервера.
+## Схема
 
-## 1. Поддомен (DNS)
-
-В панели, где куплен домен (ps.kz, hoster.kz, Cloudflare, REG.RU и т. п.) → DNS-записи → добавить:
-
-| Тип | Имя | Значение | TTL |
-|---|---|---|---|
-| A | `bal` | `203.0.113.10` | 300 |
-
-Если домен в Cloudflare: на время получения сертификата поставьте «DNS only» (серое облако).
-Проверка (обычно 5–30 минут):
-
-```bash
-dig +short bal.example.kz
+```
+Посетитель ──HTTPS──▶ Сервер Moodle ──HTTP, внутренняя сеть──▶ Сервер DoSteam
+                      188.130.173.173                          10.0.0.20:8090
+                      nginx/Apache + сертификат                 winter-ball (systemd)
+                      Moodle работает как раньше                DoSteam и боты не трогаются
 ```
 
-Должен вернуться IP сервера.
+- DNS: запись `A winterball → 188.130.173.173` (уже добавлена в панели egi.edu.kz).
+- **Сервер Moodle** принимает все запросы на 80/443. Для имени `winterball.egi.edu.kz` он пересылает их на сервер DoSteam, остальное остаётся Moodle. Сертификат HTTPS тоже здесь.
+- **Сервер DoSteam** (без внешнего IP) запускает сайт отдельным сервисом на своём порту (по умолчанию 8090), рядом с DoSteam и ботами. Telegram-бот бала работает через long polling, то есть сам ходит в интернет, входящие соединения ему не нужны.
 
-## 2. Подготовка сервера
+`10.0.0.20` везде пример: подставьте реальный внутренний IP сервера DoSteam (`hostname -I` на нём).
+
+---
+
+## Часть 1. Сервер DoSteam: ставим сайт с GitHub
 
 ```bash
-ssh root@203.0.113.10
+ssh user@сервер-dosteam
 ```
 
-```bash
-apt update && apt install -y python3 python3-venv git nginx certbot python3-certbot-nginx
-```
+### 1.1. Доступ к репозиторию
+
+Если репозиторий публичный, пропустите этот шаг. Если приватный, нужен ключ только для чтения:
 
 ```bash
-ufw allow OpenSSH && ufw allow 'Nginx Full' && ufw --force enable
-```
-
-Отдельный пользователь без прав входа:
-
-```bash
-useradd --system --home /opt/winter-ball --shell /usr/sbin/nologin winterball
-```
-
-## 3. Код и зависимости
-
-```bash
-git clone https://github.com/dosmuhamedkemelbekov-ui/winter-ball.git /opt/winter-ball
-```
-
-(репозиторий приватный — нужен deploy key или токен; либо скопируйте папку через `scp -r`.)
-
-```bash
-cd /opt/winter-ball && python3 -m venv venv && venv/bin/pip install -r requirements.txt
-```
-
-## 4. config.json
-
-```bash
-cp config.example.json config.json && nano config.json
-```
-
-Обязательно поменять:
-
-- `"public_url": "https://bal.example.kz"` — без слэша в конце, иначе ссылки в Telegram и QR будут неверные;
-- `"host": "127.0.0.1"` — сайт будет доступен только через nginx;
-- `admin_key` — длинный случайный пароль (`openssl rand -hex 16`);
-- `telegram_token`, `admin_ids`, `admin_chat_id`, `kaspi_phone`, `kaspi_name`, `contact` — см. README.
-
-```bash
-mkdir -p data && chown -R winterball:winterball /opt/winter-ball && chmod 600 config.json
-```
-
-## 5. Автозапуск (systemd)
-
-```bash
-cp deploy/winter-ball.service /etc/systemd/system/ && systemctl daemon-reload && systemctl enable --now winter-ball
+sudo ssh-keygen -t ed25519 -N "" -f /root/.ssh/winterball_deploy -C winterball-deploy
 ```
 
 ```bash
-systemctl status winter-ball
+sudo cat /root/.ssh/winterball_deploy.pub
+```
+
+GitHub → репозиторий → Settings → Deploy keys → Add deploy key → вставить ключ (галочку «Allow write access» не ставить). Затем:
+
+```bash
+printf 'Host github-winterball\n  HostName github.com\n  User git\n  IdentityFile /root/.ssh/winterball_deploy\n' | sudo tee -a /root/.ssh/config
+```
+
+### 1.2. Клонирование
+
+Приватный репозиторий:
+
+```bash
+sudo git clone git@github-winterball:dosmuhamedkemelbekov-ui/winter-ball.git /opt/winter-ball
+```
+
+Публичный:
+
+```bash
+sudo git clone https://github.com/dosmuhamedkemelbekov-ui/winter-ball.git /opt/winter-ball
+```
+
+Папка `deploy/` пока есть только в ветке `claude/epic-wright-iacgd1`. Пока её не слили в `main`, переключитесь на неё:
+
+```bash
+sudo git -C /opt/winter-ball checkout claude/epic-wright-iacgd1
+```
+
+### 1.3. Установка одной командой
+
+```bash
+sudo bash /opt/winter-ball/deploy/deploy.sh
+```
+
+Скрипт:
+- ставит `python3-venv`, если его нет, создаёт `venv` и ставит `aiohttp`;
+- создаёт системного пользователя `winterball`. Сайт работает от него и может писать только в `data/`;
+- при первом запуске создаёт `config.json` с адресом `https://winterball.egi.edu.kz`, портом 8090 и случайным паролем для `/admin`. Если порт занят DoSteam или ботами, останавливается и пишет об этом;
+- ставит и запускает сервис `winter-ball` (systemd, автозапуск, перезапуск при сбое);
+- проверяет, что сайт отвечает, и печатает адрес для прокси и пароль админки.
+
+Другой порт: `sudo PORT=8095 bash /opt/winter-ball/deploy/deploy.sh`.
+
+### 1.4. Заполнить config.json
+
+```bash
+sudo nano /opt/winter-ball/config.json
+```
+
+Заполните `telegram_token`, `admin_ids`, `admin_chat_id`, `kaspi_phone`, `kaspi_name`, `contact` (см. README). Для бала нужен **отдельный бот**: один токен нельзя одновременно опрашивать из двух программ, поэтому токен ботов DoSteam сюда не подходит.
+
+```bash
+sudo systemctl restart winter-ball
+```
+
+### 1.5. Открыть порт только для сервера Moodle
+
+Если на сервере DoSteam включён ufw (`sudo ufw status`), разрешите доступ к порту только серверу Moodle (его **внутренний** IP):
+
+```bash
+sudo ufw allow from ВНУТРЕННИЙ_IP_MOODLE to any port 8090 proto tcp
+```
+
+Если ufw выключен, не включайте его ради этого: можно случайно закрыть доступ к DoSteam и SSH.
+
+С сервера Moodle проверьте, что сайт виден:
+
+```bash
+curl -s http://10.0.0.20:8090/api/config
+```
+
+Должен вернуться JSON.
+
+---
+
+## Часть 2. Сервер Moodle: перенаправление winterball.egi.edu.kz
+
+Какой веб-сервер стоит:
+
+```bash
+systemctl is-active nginx apache2 httpd
+```
+
+### Вариант A: nginx
+
+```bash
+sudo nano /etc/nginx/sites-available/winterball.egi.edu.kz
+```
+
+Вставьте содержимое `deploy/nginx-winter-ball.conf`, заменив `10.0.0.20:8090` на свой адрес. Затем:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/winterball.egi.edu.kz /etc/nginx/sites-enabled/
 ```
 
 ```bash
-curl -s http://127.0.0.1:8080/api/config
+sudo nginx -t && sudo systemctl reload nginx
 ```
 
-Логи: `journalctl -u winter-ball -f`
+`reload` не обрывает Moodle. Если `nginx -t` пишет ошибку, ничего не применяется и Moodle продолжает работать по-старому.
 
-## 6. nginx + HTTPS
+### Вариант B: Apache
 
 ```bash
-sed 's/bal.example.kz/ВАШ_ПОДДОМЕН/' deploy/nginx-winter-ball.conf > /etc/nginx/sites-available/winter-ball
+sudo a2enmod proxy proxy_http headers
 ```
 
 ```bash
-ln -s /etc/nginx/sites-available/winter-ball /etc/nginx/sites-enabled/ && nginx -t && systemctl reload nginx
+sudo nano /etc/apache2/sites-available/winterball.egi.edu.kz.conf
 ```
 
-Бесплатный сертификат Let's Encrypt (с автопродлением):
+Вставьте содержимое `deploy/apache-winter-ball.conf`, заменив `10.0.0.20:8090`. Затем:
 
 ```bash
-certbot --nginx -d bal.example.kz --redirect -m you@example.com --agree-tos -n
+sudo a2ensite winterball.egi.edu.kz && sudo apachectl configtest && sudo systemctl reload apache2
 ```
 
-HTTPS обязателен: без него камера/копирование в браузере телефона работают хуже, и Kaspi-ссылки выглядят подозрительно.
-
-## 7. Проверка
-
-1. Откройте `https://bal.example.kz` — афиша.
-2. Оформите тестовый билет, загрузите любой скриншот — чек должен прийти в Telegram.
-3. Нажмите «✅ Подтвердить» — на странице заявки появится QR.
-4. `https://bal.example.kz/admin` → ключ → отсканируйте QR телефоном → «Отметить вход».
-5. Удалите тестовую заявку или просто не учитывайте её (видна в /admin).
-
-## Обновление сайта
+### HTTPS
 
 ```bash
-cd /opt/winter-ball && sudo -u winterball git pull && systemctl restart winter-ball
+sudo apt install -y certbot python3-certbot-nginx
 ```
+
+(для Apache: `python3-certbot-apache`)
+
+```bash
+sudo certbot --nginx -d winterball.egi.edu.kz --redirect
+```
+
+(для Apache: `--apache`). Certbot меняет только блок winterball, сертификат Moodle не трогает и продлевает новый сертификат сам.
+
+---
+
+## Часть 3. Проверка
+
+1. `nslookup winterball.egi.edu.kz` возвращает `188.130.173.173`.
+2. https://winterball.egi.edu.kz открывает афишу. Moodle по своему адресу работает как раньше.
+3. Тестовый билет → чек приходит в Telegram → «✅ Подтвердить» → на странице появляется QR.
+4. https://winterball.egi.edu.kz/admin → пароль из `config.json` → скан QR телефоном → «Отметить вход».
+
+## Обновление после изменений на GitHub
+
+На сервере DoSteam:
+
+```bash
+sudo bash /opt/winter-ball/deploy/deploy.sh
+```
+
+Скрипт сам сделает `git pull`, обновит зависимости и перезапустит сайт. `config.json` и `data/` при этом не трогаются.
 
 ## Резервная копия
 
-Всё ценное — в `data/` (база заявок и чеки). Ежедневная копия:
+Всё ценное лежит в `data/` (заявки и чеки) и `config.json`:
 
 ```bash
-echo '0 3 * * * root tar czf /root/winter-ball-$(date +\%F).tgz -C /opt/winter-ball data config.json' > /etc/cron.d/winter-ball-backup
+echo '0 3 * * * root tar czf /root/winter-ball-$(date +\%F).tgz -C /opt/winter-ball data config.json' | sudo tee /etc/cron.d/winter-ball-backup
 ```
-
-## Без своего сервера
-
-- **Render / Railway:** Start command `python server.py`, `host` = `0.0.0.0`, `port` = порт платформы, подключить Persistent Disk на `/opt/render/project/src/data`. Поддомен — CNAME на адрес платформы.
-- **Быстрый тест с компьютера:** `cloudflared tunnel --url http://localhost:8080` (адрес меняется при каждом запуске, для продажи не годится).
 
 ## Если что-то не работает
 
-| Симптом | Причина |
+| Симптом | Где смотреть |
 |---|---|
-| `502 Bad Gateway` | сервис не запущен: `journalctl -u winter-ball -n 50` |
-| `413 Request Entity Too Large` при загрузке чека | нет `client_max_body_size` в nginx |
-| Ссылки в Telegram ведут на localhost | не исправлен `public_url` |
-| Бот молчит | неверный `telegram_token` или у бота стоит вебхук другого сервиса |
-| certbot: «Timeout during connect» | DNS ещё не обновился или порт 80 закрыт |
+| `502 Bad Gateway` | сервер Moodle не достаёт до DoSteam: `curl http://10.0.0.20:8090/api/config` с сервера Moodle; на DoSteam: `systemctl status winter-ball`, `journalctl -u winter-ball -n 50` |
+| Открывается Moodle вместо бала | блок winterball не включён или опечатка в `server_name`/`ServerName` |
+| `413 Request Entity Too Large` при загрузке чека | нет `client_max_body_size` (nginx) |
+| Ссылки в Telegram ведут на localhost | неверный `public_url` в `config.json` |
+| Бот молчит, в логе `Conflict: terminated by other getUpdates` | этот токен уже использует другой бот: нужен отдельный |
+| certbot: «Timeout during connect» | DNS ещё не обновился или порт 80 сервера Moodle закрыт снаружи |
