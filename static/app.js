@@ -21,7 +21,7 @@
   if (mine.length) { const a = $("#myTicket"); a.hidden = false; a.href = "/t/" + mine[0]; }
 
   // countdown
-  const target = new Date(CONFIG?.event?.date_iso || "2026-12-04T16:00:00+05:00").getTime();
+  const target = new Date(CONFIG?.event?.date_iso || "2026-12-02T16:00:00+05:00").getTime();
   const pad = n => String(n).padStart(2, "0");
   const tick = () => {
     let s = Math.max(0, Math.floor((target - Date.now()) / 1000));

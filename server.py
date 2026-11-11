@@ -509,7 +509,7 @@ def event_jsonld():
         "eventStatus": "https://schema.org/EventScheduled",
         "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
         "location": place,
-        "image": [f"{base}/static/img/poster.webp"],
+        "image": [f"{base}/static/img/poster.webp?v=2"],
         "organizer": [{"@type": "Organization", "name": "ЕАГИ"},
                       {"@type": "Organization", "name": "DOSTEAM"}],
         "offers": [{
