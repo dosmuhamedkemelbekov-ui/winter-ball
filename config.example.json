@@ -11,6 +11,7 @@
   "kaspi_phone": "+7 700 000 00 00",
   "kaspi_name": "Имя Ф.",
   "contact": "@dosteam",
+  "google_site_verification": "",
 
   "prices": { "single": 1500, "pair": 2000 },
   "capacity": 0,
@@ -21,6 +22,7 @@
     "date_iso": "2026-12-04T16:00:00+05:00",
     "time": "16:00",
     "place": "Конференц-зал ВКЕАГИ",
+    "address": "",
     "dress_girls": "Девушки — в вечерних платьях",
     "dress_boys": "Парни — в костюмах"
   }

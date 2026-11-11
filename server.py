@@ -487,6 +487,72 @@ def page(name):
     return handler
 
 
+# ---------------------------------------------------------------- seo
+def site_url():
+    return CFG.get("public_url", "").rstrip("/")
+
+
+def event_jsonld():
+    """Разметка schema.org/Event: Google может показать бал карточкой мероприятия в поиске."""
+    ev, base = CFG["event"], site_url()
+    left = seats_left()
+    on_sale = bool(CFG.get("sales_open", True)) and left != 0
+    place = {"@type": "Place", "name": ev.get("place", "")}
+    place["address"] = ev.get("address") or ev.get("place", "")
+    data = {
+        "@context": "https://schema.org",
+        "@type": "Event",
+        "name": "Зимний бал ЕАГИ × DOSTEAM",
+        "description": f"Зимний бал — {ev.get('date', '')}, {ev.get('time', '')}, {ev.get('place', '')}. "
+                       f"{ev.get('dress_girls', '')}, {ev.get('dress_boys', '').lower()}. Билеты онлайн через Kaspi.",
+        "startDate": ev.get("date_iso", ""),
+        "eventStatus": "https://schema.org/EventScheduled",
+        "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+        "location": place,
+        "image": [f"{base}/static/img/poster.webp"],
+        "organizer": [{"@type": "Organization", "name": "ЕАГИ"},
+                      {"@type": "Organization", "name": "DOSTEAM"}],
+        "offers": [{
+            "@type": "Offer", "name": KIND_LABEL[k], "price": PRICES[k], "priceCurrency": "KZT",
+            "url": f"{base}/#tickets",
+            "availability": "https://schema.org/InStock" if on_sale else "https://schema.org/SoldOut",
+        } for k in ("single", "pair") if k in PRICES],
+    }
+    return json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
+
+
+async def index_page(request):
+    base = site_url()
+    a = lambda s: html.escape(s, quote=True)
+    head = [f'<link rel="canonical" href="{a(base)}/">',
+            f'<meta property="og:url" content="{a(base)}/">',
+            '<meta property="og:type" content="website">',
+            '<meta property="og:locale" content="ru_RU">',
+            f'<script type="application/ld+json">{event_jsonld()}</script>']
+    if CFG.get("google_site_verification"):
+        head.append(f'<meta name="google-site-verification" content="{a(CFG["google_site_verification"])}">')
+    text = (STATIC / "index.html").read_text("utf-8")
+    # превью в Telegram/WhatsApp и Google требуют абсолютный адрес картинки
+    text = text.replace('content="/static/img/', f'content="{a(base)}/static/img/')
+    text = text.replace("</head>", "\n".join(head) + "\n</head>", 1)
+    return web.Response(text=text, content_type="text/html", headers={"Cache-Control": "no-cache"})
+
+
+async def robots_txt(request):
+    lines = ["User-agent: *", "Allow: /", "Disallow: /admin", "Disallow: /api/", "",
+             f"Sitemap: {site_url()}/sitemap.xml", ""]
+    return web.Response(text="\n".join(lines), content_type="text/plain")
+
+
+async def sitemap_xml(request):
+    lastmod = time.strftime("%Y-%m-%d", time.gmtime((STATIC / "index.html").stat().st_mtime))
+    xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+           f'  <url><loc>{html.escape(site_url())}/</loc><lastmod>{lastmod}</lastmod></url>\n'
+           '</urlset>\n')
+    return web.Response(text=xml, content_type="application/xml")
+
+
 async def on_start(app):
     global http
     http = ClientSession(timeout=ClientTimeout(total=30))
@@ -500,7 +566,9 @@ async def on_stop(app):
 
 def make_app():
     app = web.Application(client_max_size=MAX_UPLOAD + 1024 * 64)
-    app.router.add_get("/", page("index.html"))
+    app.router.add_get("/", index_page)
+    app.router.add_get("/robots.txt", robots_txt)
+    app.router.add_get("/sitemap.xml", sitemap_xml)
     app.router.add_get("/t/{token}", page("ticket.html"))
     app.router.add_get("/admin", page("admin.html"))
     app.router.add_get("/api/config", api_config)
